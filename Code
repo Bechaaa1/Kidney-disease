@@ -1,0 +1,357 @@
+## Import dataset
+
+import pandas as pd
+df=pd.read_csv('kidney_disease.csv')
+df
+
+## Rename columns
+
+ df.rename(columns={'bp': 'blood_pressure', 'sg': 'specific gravity','al':'albumin','su':'sugar','rbc':'red blood cells','pc':'pus cell','pcc':'pus cell clumps','ba':'bacteria','bgr':'blood glucose random','bu':'blood urea','sc':'serum creatinine','sod':'sodium','pot':'potassium','hemo':'hemoglobin','pcv':'packed cell volume','wc':'white blood cell count','rc':'red blood cell count','htn':'hypertension','dm':'diabetes mellitus','cad':'coronary artery disease','appet':'appetite','pe':'pedal edema','ane':'anemia','classification':'class'},inplace=True)
+
+df
+
+## Searching NaN values
+
+df.isnull().sum()
+
+## Removing other NaN values written in other forms
+
+indexNames1 = df[df['packed cell volume'] == '\t?' ].index
+# Delete these row indexes from dataFrame
+df.drop(indexNames1 , inplace=True)
+indexNames2 = df[df['packed cell volume'] == '\t43' ].index
+# Delete these row indexes from dataFrame
+df.drop(indexNames2 , inplace=True)
+
+indexNames3 = df[df['white blood cell count'] == '\t?' ].index
+# Delete these row indexes from dataFrame
+df.drop(indexNames3 , inplace=True)
+indexNames4 = df[df['white blood cell count'] == '\t6200' ].index
+# Delete these row indexes from dataFrame
+df.drop(indexNames4 , inplace=True)
+indexNames5 = df[df['white blood cell count'] == '\t8400' ].index
+# Delete these row indexes from dataFrame
+df.drop(indexNames5 , inplace=True)
+
+indexNames6 = df[df['red blood cell count'] == '\t?' ].index
+# Delete these row indexes from dataFrame
+df.drop(indexNames6 , inplace=True)
+
+indexNames7 = df[df['diabetes mellitus'] == '\tno' ].index
+# Delete these row indexes from dataFrame
+df.drop(indexNames7 , inplace=True)
+indexNames8 = df[df['diabetes mellitus'] == '\tyes' ].index
+# Delete these row indexes from dataFrame
+df.drop(indexNames8 , inplace=True)
+indexNames9 = df[df['diabetes mellitus'] == ' yes' ].index
+# Delete these row indexes from dataFrame
+df.drop(indexNames9 , inplace=True)
+
+indexNames10 = df[df['coronary artery disease'] == '\tno' ].index
+# Delete these row indexes from dataFrame
+df.drop(indexNames10 , inplace=True)
+
+indexNames11 = df[df['class'] == 'ckd\t' ].index
+# Delete these row indexes from dataFrame
+df.drop(indexNames11 , inplace=True)
+
+# Removing NaN values from our dataset
+
+We used gererally the fillna funtion with either using the .mean() or with seaching with the .value_counts() the most frequent value.
+
+#Example for the value.counts()
+df['class'].value_counts()
+
+def preprocessing(data):
+    data=data.drop('id',axis=1)
+    data['age'].fillna(data['age'].mean(),inplace=True)   
+    data['blood_pressure'].fillna(data['blood_pressure'].mean(),inplace=True)   
+    data=data.drop('specific gravity',axis=1)
+    data['albumin'].fillna(data['albumin'].mean(),inplace=True)
+    data['sugar'].fillna(data['sugar'].mean(),inplace=True)
+    data['red blood cells'].fillna('normal',inplace=True)
+    data['pus cell'].fillna('normal',inplace=True)
+    data['pus cell clumps'].fillna('notpresent',inplace=True)
+    data['bacteria'].fillna('notpresent',inplace=True)
+    data['blood glucose random'].fillna(data['blood glucose random'].mean(),inplace=True)
+    data['blood urea'].fillna(data['blood urea'].mean(),inplace=True)
+    data['serum creatinine'].fillna(data['serum creatinine'].mean(),inplace=True)
+    data['sodium'].fillna(data['sodium'].mean(),inplace=True)
+    data['potassium'].fillna(data['potassium'].mean(),inplace=True)                
+    data['hemoglobin'].fillna(data['hemoglobin'].mean(),inplace=True)   
+    #Les valeurs après avoir utilisé .mode() n'ont pas changé. 
+    
+    data['packed cell volume'].fillna('21',inplace=True)
+    data['white blood cell count'].fillna('9800',inplace=True)  
+    data['red blood cell count'].fillna('5.2',inplace=True) 
+    data['hypertension'].fillna('no',inplace=True) 
+    data['diabetes mellitus'].fillna('no',inplace=True)   # *\tno       3
+  #\tyes      2
+# yes       1
+    data['coronary artery disease'].fillna('no',inplace=True)    # *\tno
+    data['appetite'].fillna('good',inplace=True) 
+    data['pedal edema'].fillna('no',inplace=True) 
+    data['anemia'].fillna('no',inplace=True) 
+    
+    #Et ces 3 colomnes n'ont pas voulu changé vu que les chiffres dedans sont toujours des str
+ 
+    return(data)
+
+df1=preprocessing(df)
+df1.isnull().sum()
+
+# Transforming categorical data into numerical data
+
+one_hot=pd.get_dummies(df[['red blood cells','pus cell','pus cell clumps','bacteria','hypertension','diabetes mellitus','coronary artery disease','appetite','pedal edema','anemia']])
+df1=df.drop(['red blood cells','pus cell','pus cell clumps','bacteria','hypertension','diabetes mellitus','coronary artery disease','appetite','pedal edema','anemia'],axis=1)
+df1=df1.join(one_hot)
+
+from sklearn.preprocessing import LabelEncoder
+encoder=LabelEncoder()
+b=['red blood cells','pus cell','pus cell clumps','bacteria','hypertension','diabetes mellitus','coronary artery disease','appetite','pedal edema','anemia','class']
+for i in range(0,len(b)) :
+ df1[b[i]]=encoder.fit_transform(df1[b[i]])
+print(df1)
+
+# Let's start our data Visualisation
+
+import seaborn as sns
+import matplotlib.pyplot as plt 
+df1
+
+plt.figure(figsize=(20,20))
+sns.heatmap(df1.corr(),annot=True)
+
+With this correlation map we knew the most important features that afffect our target and they are: albumin,blood urea, hemoglobin,hypertension, diabetes mellitus ... 
+
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_rows', None)
+df1.corr()
+
+plt.title('The value of ages intervals')
+plt.xlabel('Ages')
+df['age'].plot.hist(bins=5)
+
+Here's the histogram of the interval of peoples ages who participated in this reasearch.
+
+sns.distplot(df1['albumin'],bins=5,hist=True,kde=True,color='red')
+
+illness=(df1['class']).value_counts()
+label_1= illness[0] *100/ len(df)
+label_2=illness[1]*100/len(df)
+
+colors = ['lightskyblue', 'gold']
+
+values= [label_1, label_2]
+labels=["Chrononic Kidney Disease", "Not Chrononic Kidney Disease"]
+plt.figure(figsize=(10,10))
+
+plt.pie(values, labels=labels,autopct='%1.1f%%', colors=colors)
+plt.title("Chronic Kidney Disease Result Percentage")    
+plt.show()
+
+In our data set, 60.9% of persons do have Chronic Kidney Disease.
+
+The hemoglobin column is the most correlated column with our target. (It plays a huge factor)
+
+grid=sns.FacetGrid(df1,row='class',size=2.2,aspect=1.6)
+grid.map(sns.barplot,'age','hemoglobin',alpha=.5,ci=None)
+grid.add_legend()
+
+df1[['hemoglobin','class']].groupby(['hemoglobin'],as_index=True).mean()
+
+We deduct from the Correlation groupby and the correlation using seaborn that in general people who have less than 13 grams per deciliter are luckily to have Kidney Disease.
+
+#Supervised Machine Learning 
+
+Based on the correlation map, we detected the most correlated inputs with our target and they are: albumin, hemoglobin,hypertension,diabetes mellitus,appetite, blood urea ... 
+
+#Let's split our dataset into train and test dataset
+
+from sklearn.model_selection import train_test_split
+X=df1[['albumin','hemoglobin','hypertension']]  
+#Albumin are types of protein, a healsthy kidney doesn't let albumin pass from the blood into the urine 
+#hemoglobin is a major factor for anemia, and its little quantity may deprive the body of the oxygen it neeeds
+#Uncontrolled high blood pressure to narrow, weaken or harden
+y=df1['class']                 
+X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.20,random_state=30)
+
+#Let's use Logistic Regression Concept
+
+#In fact, Logistic Regression is:
+
+#used to predict a binary outcome (1 / 0),(Yes / No)
+#based on the concept of probability.
+
+from sklearn.linear_model import LogisticRegression
+from sklearn import metrics
+logreg = LogisticRegression()   #build our logistic model
+logreg.fit(X_train, y_train)  #fitting training data
+y_pred  = logreg.predict(X_test)    #testing model’s performance
+print("Accuracy={:.2f}".format(logreg.score(X_test, y_test)))
+
+print('Accuracy={:.2f}'.format(logreg.score(X_train,y_train)))
+
+#Our model is perfect with a small probability of false predictions.
+
+#Using sigmoïd function
+
+import seaborn as sns
+sns.regplot(x='hemoglobin',y='class',data=df1,logistic=True)
+
+#Using The Confusion Matrix
+
+confusion_matrix=pd.crosstab(y_test,y_pred,rownames=['Actual'],colnames=['Pred'])
+confusion_matrix
+
+sns.heatmap(confusion_matrix, annot=True, linewidths=0.5, cmap="YlGnBu")
+
+from sklearn.metrics import classification_report
+print(classification_report(y_test,y_pred))
+
+#ROC curves
+
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.metrics import accuracy_score, classification_report, precision_score, recall_score 
+from sklearn.metrics import confusion_matrix, precision_recall_curve, roc_curve, auc, log_loss
+from sklearn import metrics 
+
+logreg = LogisticRegression(solver="lbfgs")
+logreg.fit(X, y)
+
+y_pred = logreg.predict(X_test)
+y_pred_proba = logreg.predict_proba(X_test)[:, 1]
+
+[fpr, tpr, thr] = roc_curve(y_test, y_pred_proba)
+
+plt.plot(fpr,tpr,'-.or',label='logistic regression')
+plt.plot(fpr,fpr,'--g',label='random')
+plt.plot()
+plt.xlim([0.0,1.1])
+plt.ylim([0.0,1.1])
+
+plt.rcParams['font.size']=12
+plt.title('ROC curve : AUC = {:.2}'.format(auc(fpr, tpr)))
+plt.xlabel('False Positif Rate')
+plt.ylabel('True Positif Rate')
+plt.grid(True)
+plt.legend()           #AUC=Area_Under_the_Curve (between 0 and 1)
+
+#Knn algorithm (K-Nearest-Neighbor)
+
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
+
+knn=KNeighborsClassifier(n_neighbors=30) #build our knn classifier
+knn.fit(X_train,y_train) #Training KNN classifier
+y_pred=knn.predict(X_test)  #Testing
+print('Acuuracy=',accuracy_score(y_pred,y_test))
+
+n_neighbors=30
+scores=[]
+for k in range(1,30):
+    knn=KNeighborsClassifier(n_neighbors-k)
+    knn.fit(X_train,y_train)
+    y_pred=knn.predict(X_test)
+    print('Accuracy for k=',k,'is:',round(accuracy_score(y_pred,y_test),4))
+    scores.append(round(accuracy_score(y_pred,y_test),4))
+
+#The best values of k are 1,2 and 3
+
+import matplotlib.pyplot as plt
+plt.plot(range(1,30),scores)
+plt.xlabel('Value K for KNN')
+plt.ylabel('Testing Accuracy')
+
+#We can notice with this plot that 26 and 27 are good values for k
+
+#Decision Tree Model
+
+A Decision Tree model can be used to visually and explicitly represent decisions and decision making.
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import tree
+
+dtree = DecisionTreeClassifier(max_depth=5)
+dtree.fit(X_train, y_train)
+y_pred=dtree.predict(X_test)
+print("Score ={}".format(accuracy_score(y_test,y_pred)))
+y_pred
+
+classifier=tree.DecisionTreeClassifier(criterion='gini',splitter='random',max_leaf_nodes=10,min_samples_leaf=5,max_depth=5)
+classifier.fit(X_train,y_train)
+predicted=classifier.predict(X_test)
+print('Score training: {}'.format(classifier.score(X_train,y_train)))
+
+import graphviz
+dot_data=tree.export_graphviz(classifier,out_file=None)
+graph=graphviz.Source(dot_data)
+graph.render('df1')
+graph
+
+#Random Forest Classifier
+
+clf=RandomForestClassifier(n_estimators=10)  #Creating a random forest with 10 decision trees
+clf.fit(X_train, y_train)  #Training our model
+y_pred=clf.predict(X_test)  #testing our model
+print("Accuracy:", metrics.accuracy_score(y_test, y_pred)) 
+
+#Random Forest prevents overfitting.
+
+forest = RandomForestClassifier(max_depth=5)
+forest.fit(X_train, y_train)
+y_pred_proba1 = forest.predict_proba(X_test)[:, 1]
+[fpr1, tpr1, thr1] = roc_curve(y_test, y_pred_proba1)
+
+
+plt.plot(fpr1,tpr1,'-.ob',label='random forest')
+plt.plot(fpr,fpr,'--g',label='no skill')
+plt.plot()
+plt.xlim([0.0,1.1])
+plt.ylim([0.0,1.1])
+plt.rcParams['font.size']=12
+plt.title('ROC curve : AUC = {:.2}'.format(auc(fpr, tpr)))
+plt.xlabel('False Positif Rate')
+plt.ylabel('True Positif Rate')
+plt.grid(True)
+plt.legend()
+
+plt.plot(fpr,tpr,'-.or',label='logistic regression')
+plt.plot(fpr1,tpr1,'-.ob',label='random forest')
+plt.plot(fpr,fpr,'--g',label='no skill')
+plt.plot()
+plt.xlim([0.0,1.1])
+plt.ylim([0.0,1.1])
+
+plt.rcParams['font.size']=12
+plt.title('Random forest VS logistic regression')
+plt.xlabel('False Positif Rate')
+plt.ylabel('True Positif Rate')
+plt.grid(True)
+plt.legend()
+
+#We can conclude with our two ROC curves that in this dataset our two methods Random forest and logistic regression are almost similar and with perfect accuracy. 
+
+#Test yourself
+
+albumin_input=int(input('Enter the value of albumin:'))
+hemoglobin_input=float(input('Enter the value of hemoglobin:'))
+hypertension_input=int(input('Do you have hypertension ? (If yes write 1, if no write 0):'))
+
+df2=pd.DataFrame({'albumin':[albumin_input],'hemoglobin':[hemoglobin_input],'hypertension':[hypertension_input]})
+
+logreg = LogisticRegression()   #build our logistic model
+logreg.fit(X_train, y_train)  #fitting training data
+y_pred  = logreg.predict(df2)    #testing model’s performance
+
+y_pred_result=int(y_pred)
+y_pred_result
+
+if y_pred_result ==1 :
+    print('This patient luckily doesn\'t have Kidney Disease') #If the result is 1, the person probably doesn't have Kidney Disease
+
+else:
+    print('This patient luckily has Kidney Disease')    #If the result is 0, the person probably has Kidney Disease 
+
