@@ -350,8 +350,8 @@ y_pred_result=int(y_pred)
 y_pred_result
 
 if y_pred_result ==1 :
-    print('This patient luckily doesn\'t have Kidney Disease') #If the result is 1, the person probably doesn't have Kidney Disease
+    print('This patient probably doesn\'t have Kidney Disease') #If the result is 1, the person probably doesn't have Kidney Disease
 
 else:
-    print('This patient luckily has Kidney Disease')    #If the result is 0, the person probably has Kidney Disease 
+    print('This patient probably has Kidney Disease')    #If the result is 0, the person probably has Kidney Disease 
 
